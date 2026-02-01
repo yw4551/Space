@@ -20,7 +20,10 @@ class Satellite(SpaceEntity):
         else:
             print(f"Final destination reached: {packet.data}")
 
-sn = SpaceNetwork(level=2)
+class BrokenConnectionError(Exception):
+    pass
+
+sn = SpaceNetwork(level=3)
 sat1 = Satellite("sat1", 100)
 sat2 = Satellite("sat2", 200)
 earth = Satellite("earth", 0)
@@ -38,6 +41,12 @@ def transmission_attempt(packet):
         except DataCorruptedError:
             print("Data corrupted, retrying...")
             continue
+        except LinkTerminatedError:
+            print("Link lost")
+            raise BrokenConnectionError("Link lost")
+        except OutOfRangeError:
+            print("Target out of range")
+            raise BrokenConnectionError("Target out of range")
         break
 
 def main():
