@@ -1,4 +1,4 @@
-from space_network import *
+from space_network_lib import *
 import time
 
 class RelayPacket(Packet):
@@ -24,10 +24,16 @@ class BrokenConnectionError(Exception):
     pass
 
 sn = SpaceNetwork(level=3)
+earth = Satellite("earth", 0)
 sat1 = Satellite("sat1", 100)
 sat2 = Satellite("sat2", 200)
-earth = Satellite("earth", 0)
-p_final = Packet("Hello from earth", sat1, sat2)
+sat3 = Satellite("sat3", 300)
+sat4 = Satellite("sat4", 400)
+packet = Packet("Hello from earth", sat3, sat4)
+relay1 = RelayPacket(packet, sat2, sat3)
+relay2 = RelayPacket(relay1, sat1, sat2)
+relay3 = RelayPacket(relay2, earth, sat1)
+p_final = Packet("Hello from earth", sat1, sat4)
 p_earth_to_sat1 = RelayPacket(p_final, earth, sat1)
 
 def transmission_attempt(packet):
@@ -50,7 +56,10 @@ def transmission_attempt(packet):
         break
 
 def main():
-    transmission_attempt(p_earth_to_sat1)
+    try:
+        transmission_attempt(relay3)
+    except BrokenConnectionError:
+        print("Transmission failed")
 
 if __name__ == "__main__":
     main()
